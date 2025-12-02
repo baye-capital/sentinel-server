@@ -1,0 +1,69 @@
+const mongoose = require("mongoose");
+
+const BookingSchema = new mongoose.Schema({
+  license: String,
+  name: String,
+  phoneNo: String,
+  registration: String,
+  color: String,
+  make: String,
+  model: String,
+  type: String,
+  zone: String,
+  team: String,
+  location: String,
+  notes: String,
+  dob: String,
+  email: String,
+  phoneTwo: String,
+  height: String,
+  gender: String,
+  address: String,
+  vehicleBody: String,
+  vehicleType: String,
+  origin: String,
+  vehicleYear: String,
+  capacity: String,
+  fuel: String,
+  vin: String,
+  pin: String,
+  offence: [
+    new mongoose.Schema(
+      {
+        code: String,
+        id: String,
+        name: {
+          type: String,
+          required: true,
+        },
+        penalty: String,
+        amount: Number,
+        mdasId: Number,
+      },
+      { _id: false }
+    ),
+  ],
+  confiscations: [],
+  eoCode: String,
+  beatCode: String,
+  price: Number,
+  billRef: String,
+  paid: {
+    type: Boolean,
+    default: false,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+});
+
+module.exports = mongoose.model("Booking", BookingSchema);
