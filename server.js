@@ -74,6 +74,7 @@ app.use(
       "https://sentinel-06xt.onrender.com",
       "http://localhost:5173",
       "https://www.motohub.ng",
+      "https://motohub.ng"
     ], // Allow requests from this origin
   })
 );
