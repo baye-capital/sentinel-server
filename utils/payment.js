@@ -37,6 +37,12 @@ class PayKadunaMotorMarket {
         "Error creating bill:",
         error.response?.data || error.message
       );
+      // Return the error response so controller can handle it
+      return {
+        success: false,
+        message: error.response?.data?.message || error.message,
+        error: error.response?.data || error.message
+      };
     }
   }
 

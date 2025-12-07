@@ -16,7 +16,7 @@ exports.initializeTransaction = asyncHandler(async (req, res, next) => {
   // create insurance
   const user = req.body.user;
   const existing = await User.findOne({ email: user.email });
-  console.log(existing);
+  console.log(existing); 
   if (existing) {
     var newUser = await User.findByIdAndUpdate(existing._id, user, {
       new: true,

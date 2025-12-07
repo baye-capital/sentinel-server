@@ -16,7 +16,13 @@ exports.getInspections = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/Inspection/:id
 // @access  Private / admin
 exports.getInspection = asyncHandler(async (req, res, next) => {
-  const inspection = await Inspection.findById(req.params.id).populate(
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  const inspection = await Inspection.findOne(query).populate(
     req.query.populate
   );
   if (!inspection) {
@@ -35,6 +41,9 @@ exports.getInspection = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/Inspection
 // @access  Public
 exports.createInspection = asyncHandler(async (req, res, next) => {
+  // Zone is auto-populated by autoPopulateZone middleware
+  req.body.createdBy = req.user._id;
+
   if (req.files && req.files.docs) {
     for (const doc of req.files.docs) {
       const file = doc;

@@ -13,7 +13,7 @@ exports.getInsurances = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Get a single Insurance
-// @route   GET /api/v1/Insurance/:id
+// @route   GET /api/v1/Insurance/:id 
 // @access  Private / admin
 exports.getInsurance = asyncHandler(async (req, res, next) => {
   if (req.query.reference === "check") {
@@ -88,6 +88,7 @@ exports.createInsurance = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // Zone is auto-populated by autoPopulateZone middleware
   req.body.createdBy = req.user._id;
 
   const insurance = await Insurance.create(req.body);

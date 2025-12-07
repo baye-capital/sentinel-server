@@ -34,10 +34,6 @@ const BuildingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
   expiry: {
     type: Date,
     default: () => Date.now() + 1000 * 60 * 60 * 24 * 365,

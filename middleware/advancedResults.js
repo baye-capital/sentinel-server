@@ -68,7 +68,14 @@ const AdvancedResults = (model, populate) => async (req, res, next) => {
 
   // finding resource
   const parsedStr = { ...JSON.parse(queryStr), ...search };
-  query = model.find(parsedStr);
+  
+  // Apply zone filter from roleFilter middleware if present
+  let finalQuery = parsedStr;
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    finalQuery = { ...parsedStr, ...req.zoneFilter };
+  }
+  
+  query = model.find(finalQuery);
 
   // select fields
   if (req.query.select) {
@@ -89,7 +96,7 @@ const AdvancedResults = (model, populate) => async (req, res, next) => {
   const limit = parseInt(req.query.limit, 10) || 25;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  const total = await model.countDocuments(parsedStr);
+  const total = await model.countDocuments(finalQuery);
 
   query = query.skip(startIndex).limit(limit);
 

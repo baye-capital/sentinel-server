@@ -16,7 +16,13 @@ exports.getCollisions = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/Collision/:id
 // @access  Private / admin
 exports.getCollision = asyncHandler(async (req, res, next) => {
-  const collision = await Collision.findById(req.params.id).populate(
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  const collision = await Collision.findOne(query).populate(
     req.query.populate
   );
   if (!collision) {
@@ -36,6 +42,7 @@ exports.getCollision = asyncHandler(async (req, res, next) => {
 // @access  Public
 exports.createCollision = asyncHandler(async (req, res, next) => {
   req.body.createdBy = req.user._id;
+  // Zone is auto-populated by autoPopulateZone middleware
 
   if (req.files.img) {
     const file = req.files.img[0];
@@ -178,10 +185,41 @@ exports.createCollision = asyncHandler(async (req, res, next) => {
   }
 
   req.body.vid = "";
-  req.body.vehicle = parseFieldIfString(req.body.vehicle);
-  req.body.witness = parseFieldIfString(req.body.witness);
-  req.body.officer = parseFieldIfString(req.body.officer);
-  req.body.createdAt = new Date(JSON.parse(req.body.createdAt));
+  
+  // Parse JSON fields if they are strings, with fallback to empty arrays
+  const parseArrayField = (field) => {
+    if (!field) return [];
+    if (Array.isArray(field)) return field;
+    if (typeof field === 'string') {
+      // Skip if it's a placeholder like "string" or empty
+      if (field === 'string' || field.trim() === '' || field === 'undefined') {
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(field);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.error(`Error parsing array field:`, error.message);
+        return [];
+      }
+    }
+    return [];
+  };
+  
+  req.body.vehicle = parseArrayField(req.body.vehicle);
+  req.body.witness = parseArrayField(req.body.witness);
+  req.body.officer = parseArrayField(req.body.officer);
+  
+  // Handle createdAt safely
+  if (req.body.createdAt) {
+    try {
+      const parsedDate = typeof req.body.createdAt === 'string' ? JSON.parse(req.body.createdAt) : req.body.createdAt;
+      req.body.createdAt = new Date(parsedDate);
+    } catch (error) {
+      console.error("Error parsing createdAt:", error);
+      req.body.createdAt = new Date(); // Default to current date
+    }
+  }
 
   const collision = await Collision.create(req.body);
 
@@ -195,14 +233,23 @@ exports.createCollision = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/Collision/:id
 // @access  Private
 exports.updateCollision = asyncHandler(async (req, res, next) => {
-  var collision = await Collision.findById(req.params.id).populate(
-    "inspection"
-  );
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  var collision = await Collision.findOne(query).populate("inspection");
 
   if (!collision) {
     return next(
       new ErrorResponse(`Collision not found with id of ${req.params.id}`, 404)
     );
+  }
+
+  // Prevent zone tampering for non-admins
+  if (req.user.role !== "state admin" && req.body.zone) {
+    delete req.body.zone;
   }
 
   if (req.body.comment || req.body.requirement) {
@@ -238,7 +285,13 @@ exports.updateCollision = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/Collision/:id
 // @access  Private/Admin
 exports.deleteCollision = asyncHandler(async (req, res, next) => {
-  const collision = await Collision.findById(req.params.id);
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  const collision = await Collision.findOne(query);
   if (!collision) {
     return next(
       new ErrorResponse(`Collision not found with id of ${req.params.id}`, 404)

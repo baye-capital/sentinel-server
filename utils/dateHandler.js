@@ -114,12 +114,20 @@ exports.randomNumbers = () => {
 };
 
 exports.parseFieldIfString = (field) => {
-  if (typeof field === "string") {
-    try {
-      return JSON.parse(field);
-    } catch (error) {
-      console.error("Error parsing field:", error);
-    }
+  // Return as-is if already an object/array or undefined/null
+  if (!field || typeof field !== "string") {
+    return field;
   }
-  return field;
+  
+  // Return as-is if empty string
+  if (field.trim() === "") {
+    return field;
+  }
+  
+  try {
+    return JSON.parse(field);
+  } catch (error) {
+    console.error("Error parsing field:", error);
+    return field; // Return original string if parsing fails
+  }
 };

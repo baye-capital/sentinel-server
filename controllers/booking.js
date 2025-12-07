@@ -17,9 +17,13 @@ exports.getBookings = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/Booking/:id
 // @access  Private / admin
 exports.getBooking = asyncHandler(async (req, res, next) => {
-  const booking = await Booking.findById(req.params.id).populate(
-    req.query.populate
-  );
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  const booking = await Booking.findOne(query).populate(req.query.populate);
   if (!booking) {
     return next(
       new ErrorResponse(`Booking not found with id of ${req.params.id}`, 404)
@@ -37,6 +41,9 @@ exports.getBooking = asyncHandler(async (req, res, next) => {
 // @access  Public
 exports.createBooking = asyncHandler(async (req, res, next) => {
   req.body.createdBy = req.user._id;
+
+  // Auto-populate zone for non-admins (done by middleware)
+  // Zone is already set by autoPopulateZone middleware
 
   const billResponse = await payKaduna.createBill({
     amount: req.body.price,
@@ -71,12 +78,23 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/Booking/:id
 // @access  Private
 exports.updateBooking = asyncHandler(async (req, res, next) => {
-  var booking = await Booking.findById(req.params.id);
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  var booking = await Booking.findOne(query);
 
   if (!booking) {
     return next(
       new ErrorResponse(`Booking not found with id of ${req.params.id}`, 404)
     );
+  }
+
+  // Prevent zone tampering for non-admins
+  if (req.user.role !== "state admin" && req.body.zone) {
+    delete req.body.zone;
   }
 
   booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
@@ -94,7 +112,13 @@ exports.updateBooking = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/Booking/:id
 // @access  Private/Admin
 exports.deleteBooking = asyncHandler(async (req, res, next) => {
-  const booking = await Booking.findById(req.params.id);
+  // Apply zone filter from middleware
+  let query = { _id: req.params.id };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
+  const booking = await Booking.findOne(query);
   if (!booking) {
     return next(
       new ErrorResponse(`Booking not found with id of ${req.params.id}`, 404)
@@ -119,14 +143,18 @@ exports.bookingStat = asyncHandler(async (req, res, next) => {
   let month = 0;
   let year = 0;
 
+  // Apply zone filter from middleware
+  let query = { createdAt: { $gte: dateBounds.startOfYear } };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
   // Retrieve all bookings from this year onwards
-  const books = await Booking.find({
-    createdAt: { $gte: dateBounds.startOfYear },
-  }).select("id createdAt");
+  const books = await Booking.find(query).select("id createdAt");
 
   books.forEach((booking) => {
     const createdAt = booking.createdAt;
-
+   
     if (createdAt >= dateBounds.startOfDay) {
       today++;
       week++;
@@ -134,7 +162,7 @@ exports.bookingStat = asyncHandler(async (req, res, next) => {
       year++;
     } else if (createdAt >= dateBounds.startOfWeek) {
       week++;
-      month++;
+      month++;  
       year++;
     } else if (createdAt >= dateBounds.startOfMonth) {
       month++;
@@ -165,11 +193,14 @@ exports.bookingRev = asyncHandler(async (req, res, next) => {
   let month = 0;
   let year = 0;
 
+  // Apply zone filter from middleware
+  let query = { createdAt: { $gte: dateBounds.startOfYear }, paid: true };
+  if (req.zoneFilter && Object.keys(req.zoneFilter).length > 0) {
+    query = { ...query, ...req.zoneFilter };
+  }
+
   // Retrieve all bookings from this year onwards
-  const books = await Booking.find({
-    createdAt: { $gte: dateBounds.startOfYear },
-    paid: true,
-  }).select("id createdAt price");
+  const books = await Booking.find(query).select("id createdAt price");
 
   books.forEach((booking) => {
     const createdAt = booking.createdAt;

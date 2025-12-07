@@ -10,6 +10,8 @@ const xss = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 const hpp = require("hpp");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 const errorHandler = require("./middleware/error");
 const connectDB = require("./config/db");
 
@@ -74,13 +76,25 @@ app.use(
       "https://sentinel-06xt.onrender.com",
       "http://localhost:5173",
       "https://www.motohub.ng",
-      "https://motohub.ng"
-    ], // Allow requests from this origin
+      "https://motohub.ng",
+    ],
+    credentials: true, // Allow cookies and credentials
   })
 );
 
 // set static folder
 app.use(express.static(path.join(__dirname, "public")));
+
+// Swagger API Documentation
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Sentinel Server API Docs",
+  })
+);
 
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/users", users);
@@ -105,7 +119,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT|| 9000;
 
 const server = app.listen(
   PORT,
