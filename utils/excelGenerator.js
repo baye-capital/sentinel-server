@@ -270,6 +270,7 @@ async function generateExcelReport({
   startDate,
   endDate,
   zone,
+  unit,
   generatedBy,
 }) {
   const config = REPORT_CONFIGS[reportType];
@@ -294,9 +295,18 @@ async function generateExcelReport({
 
   // Add title row
   const periodLabel = PERIOD_LABELS[period];
-  const zoneLabel = zone === "all" ? "ALL ZONES" : `ZONE ${zone.toUpperCase()}`;
+  let locationLabel;
+  if (unit && unit !== "all") {
+    locationLabel = `UNIT ${unit.toUpperCase()}`;
+  } else if (zone && zone !== "all" && zone !== "multiple") {
+    locationLabel = `ZONE ${zone.toUpperCase()}`;
+  } else if (zone === "multiple") {
+    locationLabel = "MULTIPLE ZONES";
+  } else {
+    locationLabel = "ALL ZONES";
+  }
   const dateRange = `${formatDate(startDate)} TO ${formatDate(endDate)}`;
-  const title = `${periodLabel} ${config.title} OF ${zoneLabel} FROM ${dateRange}`;
+  const title = `${periodLabel} ${config.title} OF ${locationLabel} FROM ${dateRange}`;
 
   // Merge cells for title
   const titleRow = worksheet.insertRow(1, [title]);
@@ -396,7 +406,17 @@ async function generateExcelReport({
 
   // Generate filename
   const timestamp = Date.now();
-  const fileName = `${reportType.toUpperCase()}_${periodLabel}_REPORT_${zone === "all" ? "ALL" : zone}_${formatDate(startDate)}_to_${formatDate(endDate)}_${timestamp}.xlsx`;
+  let locationPart;
+  if (unit && unit !== "all") {
+    locationPart = `UNIT_${unit}`;
+  } else if (zone && zone !== "all" && zone !== "multiple") {
+    locationPart = zone;
+  } else if (zone === "multiple") {
+    locationPart = "MULTIPLE";
+  } else {
+    locationPart = "ALL";
+  }
+  const fileName = `${reportType.toUpperCase()}_${periodLabel}_REPORT_${locationPart}_${formatDate(startDate)}_to_${formatDate(endDate)}_${timestamp}.xlsx`;
   const tempPath = path.join(__dirname, "..", "temp", fileName);
 
   // Ensure temp directory exists

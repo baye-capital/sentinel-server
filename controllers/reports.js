@@ -72,12 +72,21 @@ function calculateDateRange(period, year, month, week, day) {
 function generateReportName(reportType, period, zone, unit, startDate, endDate) {
   const config = REPORT_CONFIGS[reportType];
   const periodLabel = PERIOD_LABELS[period];
-  const zoneLabel = zone === "all" ? "All Zones" : `Zone ${zone}`;
-  const unitLabel = unit === "all" ? "" : ` - ${unit}`;
+  
+  // Determine location label - either zone or unit, not both
+  let locationLabel;
+  if (unit && unit !== "all") {
+    locationLabel = `Unit ${unit}`;
+  } else if (zone && zone !== "all") {
+    locationLabel = zone === "multiple" ? "Multiple Zones" : `Zone ${zone}`;
+  } else {
+    locationLabel = "All Zones";
+  }
+  
   const dateStr = moment(startDate).format("YYYY-MM-DD");
   const endDateStr = moment(endDate).format("YYYY-MM-DD");
 
-  return `${config.title} - ${periodLabel} - ${zoneLabel}${unitLabel} (${dateStr} to ${endDateStr})`;
+  return `${config.title} - ${periodLabel} - ${locationLabel} (${dateStr} to ${endDateStr})`;
 }
 
 /**
@@ -189,11 +198,11 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
 
   const { startDate, endDate } = dateRange;
 
-  // Build zone filter
+  // Build zone filter for actual data querying
   const zoneFilter = buildZoneFilter(req.user, zone);
 
-  // Build unit filter
-  const unitFilter = buildUnitFilter(req.user, unit);
+  // Note: Unit is used for report labeling/identification only, not for filtering data
+  // The unit parameter indicates which organizational unit is generating/owns the report
 
   // Build payment filter based on report type
   let paymentFilter = {};
@@ -203,29 +212,36 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
     paymentFilter = { paid: false };
   }
 
+  // Determine effective zone and unit for the report record
+  // If unit is specified, zone should be null; if zone is specified, unit should be null
+  const requestedUnit = unit && unit !== "all" ? unit : null;
+  const requestedZone = requestedUnit 
+    ? null 
+    : (zoneFilter.zone || (zoneFilter.$or ? "multiple" : (zone && zone !== "all" ? zone : "all")));
+
   // Create report record
   const report = await Report.create({
-    name: generateReportName(reportType, period, zone, unit, startDate, endDate),
+    name: generateReportName(reportType, period, requestedZone, requestedUnit, startDate, endDate),
     reportType,
     period,
     startDate,
     endDate,
     year,
-    zone: zone || "all",
-    unit: unit || "all",
+    zone: requestedZone,
+    unit: requestedUnit,
     generatedBy: req.user._id,
     status: "generating",
   });
 
   try {
     // Fetch bookings with filters
+    // Only apply zone filter to the data, unit is for report labeling only
     const query = {
       createdAt: {
         $gte: startDate,
         $lte: endDate,
       },
       ...zoneFilter,
-      ...unitFilter,
       ...paymentFilter,
     };
 
@@ -240,7 +256,8 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
       period,
       startDate,
       endDate,
-      zone,
+      zone: requestedZone,
+      unit: requestedUnit,
       generatedBy: req.user.name || req.user.email,
     });
 

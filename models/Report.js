@@ -54,8 +54,10 @@ const ReportSchema = new mongoose.Schema({
       "13",
       "14",
       "15",
+      "multiple",
+      null,
     ],
-    default: "all",
+    default: null,
   },
 
   // Unit filtering
@@ -67,8 +69,9 @@ const ReportSchema = new mongoose.Schema({
       "2",
       "3",
       "4",
+      null,
     ],
-    default: "all",
+    default: null,
   },
 
   // File storage
