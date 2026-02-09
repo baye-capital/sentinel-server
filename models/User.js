@@ -96,7 +96,7 @@ const UserSchema = new mongoose.Schema(
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
-);
+);  
 
 UserSchema.virtual("inspection", {
   ref: "Inspection",

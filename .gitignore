@@ -2,3 +2,4 @@ config/config.env
 node_modules
 app.yaml
 .env
+REPORTS_API_FRONTEND_GUIDE.md

@@ -47,7 +47,7 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
 
   const billResponse = await payKaduna.createBill({
     amount: req.body.price,
-    mdasId: req.body.offence[0].mdasId,
+    mdasId: await payKaduna.getMdasId(req.body.offence[0].mdasId),
     narration: req.body.offence[0].name,
     firstName: req.body.name,
     middleName: ".",

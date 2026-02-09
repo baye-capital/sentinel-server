@@ -35,6 +35,7 @@ const organisation = require("./routes/organisation");
 const payment = require("./routes/payment");
 const collision = require("./routes/collision");
 const booking = require("./routes/booking");
+const reports = require("./routes/reports");
 
 const app = express();
 
@@ -107,6 +108,7 @@ app.use("/api/v1/org", organisation);
 app.use("/api/v1/payment", payment);
 app.use("/api/v1/collision", collision);
 app.use("/api/v1/booking", booking);
+app.use("/api/v1/reports", reports);
 app.use(errorHandler);
 
 if (process.env.NODE_ENV === "production") {
