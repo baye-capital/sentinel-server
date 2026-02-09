@@ -139,8 +139,7 @@ exports.createUser = asyncHandler(async (req, res, next) => {
     if (file.size > process.env.MAX_FILE_UPLOAD) {
       return next(
         new ErrorResponse(
-          `Please Upload an image file less than ${
-            process.env.MAX_FILE_UPLOAD / 1000000
+          `Please Upload an image file less than ${process.env.MAX_FILE_UPLOAD / 1000000
           }mb`,
           400
         )
@@ -390,6 +389,7 @@ exports.acceptInvite = asyncHandler(async (req, res, next) => {
       lastName: req.body.lastName,
       organisation: invite?.organisation,
       zone: invite?.zone,
+      unit: invite?.unit,
       password: req.body.password,
     });
 

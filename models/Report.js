@@ -11,7 +11,7 @@ const ReportSchema = new mongoose.Schema({
     required: true,
     enum: ["snapshot", "fa", "bp", "unp"],
   },
-  
+
   // Time period
   period: {
     type: String,
@@ -30,7 +30,7 @@ const ReportSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  
+
   // Zone filtering
   zone: {
     type: String,
@@ -54,14 +54,23 @@ const ReportSchema = new mongoose.Schema({
       "13",
       "14",
       "15",
-      "Unit 1",
-      "Unit 2",
-      "Unit 3",
-      "Unit 4",
     ],
     default: "all",
   },
-  
+
+  // Unit filtering
+  unit: {
+    type: String,
+    enum: [
+      "all",
+      "1",
+      "2",
+      "3",
+      "4",
+    ],
+    default: "all",
+  },
+
   // File storage
   fileUrl: {
     type: String,
@@ -69,14 +78,14 @@ const ReportSchema = new mongoose.Schema({
   fileName: {
     type: String,
   },
-  
+
   // Report metadata
   status: {
     type: String,
     enum: ["pending", "generating", "completed", "failed"],
     default: "pending",
   },
-  
+
   // Summary data (stored for quick access without downloading file)
   summary: {
     totalRecords: { type: Number, default: 0 },
@@ -86,7 +95,7 @@ const ReportSchema = new mongoose.Schema({
     unpaidCount: { type: Number, default: 0 },
     unpaidAmount: { type: Number, default: 0 },
   },
-  
+
   // Audit fields
   generatedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -99,7 +108,7 @@ const ReportSchema = new mongoose.Schema({
   error: {
     type: String,
   },
-  
+
   createdAt: {
     type: Date,
     default: Date.now,
@@ -110,5 +119,6 @@ const ReportSchema = new mongoose.Schema({
 ReportSchema.index({ reportType: 1, period: 1, createdAt: -1 });
 ReportSchema.index({ generatedBy: 1, createdAt: -1 });
 ReportSchema.index({ zone: 1, createdAt: -1 });
+ReportSchema.index({ unit: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Report", ReportSchema);

@@ -39,6 +39,7 @@ const {
   filterByZone,
   observerReadOnly,
   autoPopulateZone,
+  autoPopulateUnit,
   canDownloadAccidentReports,
 } = require("../middleware/roleFilter");
 const advancedResults = require("../middleware/advancedResults");
@@ -51,7 +52,7 @@ router.use(protect, lastActive);
  *   post:
  *     summary: Create a new collision/accident report
  *     tags: [Collisions]
- *     description: Create accident report. Zone is auto-populated. Observers cannot create. Can include images and videos.
+ *     description: Create accident report. Zone and Unit are auto-populated. Observers cannot create. Can include images and videos.
  *     requestBody:
  *       required: true
  *       content:
@@ -62,6 +63,10 @@ router.use(protect, lastActive);
  *               zone:
  *                 type: string
  *                 description: Auto-populated from user's zone
+ *               unit:
+ *                 type: string
+ *                 description: Auto-populated from user's unit
+ *                 enum: [1, 2, 3, 4]
  *               location:
  *                 type: string
  *                 example: Lekki-Epe Expressway
@@ -135,6 +140,11 @@ router.use(protect, lastActive);
  *         in: query
  *         schema:
  *           type: string
+ *       - name: unit
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [1, 2, 3, 4]
  *     responses:
  *       200:
  *         description: List of collision reports
@@ -156,7 +166,7 @@ router.use(protect, lastActive);
  *                   items:
  *                     $ref: '#/components/schemas/Collision'
  */
-router.post("/", observerReadOnly, upload, autoPopulateZone, createCollision);
+router.post("/", observerReadOnly, upload, autoPopulateZone, autoPopulateUnit, createCollision);
 
 router.get("/", filterByZone, advancedResults(Collision), getCollisions);
 

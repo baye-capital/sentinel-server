@@ -6,16 +6,16 @@ const options = {
     info: {
       title: "Sentinel Server API",
       version: "1.0.0",
-    //   description:
-    //     "Comprehensive API documentation for Sentinel Server - A vehicle and building management system for KASTLEA with role-based access control and zone management.",
-    //   contact: {
-    //     name: "API Support",
-    //     email: "support@motohub.ng",
-      },
-      license: {
-        name: "MIT",
-        url: "https://opensource.org/licenses/MIT",
-      },
+      //   description:
+      //     "Comprehensive API documentation for Sentinel Server - A vehicle and building management system for KASTLEA with role-based access control and zone management.",
+      //   contact: {
+      //     name: "API Support",
+      //     email: "support@motohub.ng",
+    },
+    license: {
+      name: "MIT",
+      url: "https://opensource.org/licenses/MIT",
+    },
     // },
     // servers: [
     //   {
@@ -125,12 +125,18 @@ const options = {
                 "13",
                 "14",
                 "15",
+              ],
+              example: "1",
+            },
+            unit: {
+              type: "string",
+              enum: [
                 "Unit 1",
                 "Unit 2",
                 "Unit 3",
                 "Unit 4",
               ],
-              example: "1",
+              example: "Unit 1",
             },
             state: {
               type: "string",
@@ -147,6 +153,11 @@ const options = {
             lastActive: {
               type: "string",
               format: "date-time",
+            },
+            unit: {
+              type: "string",
+              enum: ["Unit 1", "Unit 2", "Unit 3", "Unit 4"],
+              example: "Unit 1",
             },
             createdAt: {
               type: "string",
@@ -192,6 +203,11 @@ const options = {
             zone: {
               type: "string",
               example: "1",
+            },
+            unit: {
+              type: "string",
+              enum: ["Unit 1", "Unit 2", "Unit 3", "Unit 4"],
+              example: "Unit 1",
             },
             location: {
               type: "string",
@@ -245,6 +261,11 @@ const options = {
             zone: {
               type: "string",
               example: "1",
+            },
+            unit: {
+              type: "string",
+              enum: ["Unit 1", "Unit 2", "Unit 3", "Unit 4"],
+              example: "Unit 1",
             },
             location: {
               type: "string",

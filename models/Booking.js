@@ -29,13 +29,20 @@ const BookingSchema = new mongoose.Schema({
       "12",
       "13",
       "14",
-      "15",
-      "Unit 1",
-      "Unit 2",
-      "Unit 3",
-      "Unit 4",
+      "15"
     ],
   },
+
+
+    unit : {
+    type: String,
+      enum: [
+        "1",
+        "2",
+        "3",
+        "4",
+      ],
+    },
   team: String,
   location: String,
   notes: String,

@@ -69,14 +69,15 @@ function calculateDateRange(period, year, month, week, day) {
 /**
  * Generate report name
  */
-function generateReportName(reportType, period, zone, startDate, endDate) {
+function generateReportName(reportType, period, zone, unit, startDate, endDate) {
   const config = REPORT_CONFIGS[reportType];
   const periodLabel = PERIOD_LABELS[period];
   const zoneLabel = zone === "all" ? "All Zones" : `Zone ${zone}`;
+  const unitLabel = unit === "all" ? "" : ` - ${unit}`;
   const dateStr = moment(startDate).format("YYYY-MM-DD");
   const endDateStr = moment(endDate).format("YYYY-MM-DD");
-  
-  return `${config.title} - ${periodLabel} - ${zoneLabel} (${dateStr} to ${endDateStr})`;
+
+  return `${config.title} - ${periodLabel} - ${zoneLabel}${unitLabel} (${dateStr} to ${endDateStr})`;
 }
 
 /**
@@ -115,6 +116,33 @@ function buildZoneFilter(user, requestedZone) {
   return { zone: user.zone };
 }
 
+/**
+ * Build unit filter based on user role and requested unit
+ */
+function buildUnitFilter(user, requestedUnit) {
+  // State Admin and Observer can see all units
+  if (user.role === "state admin" || user.role === "observer") {
+    if (requestedUnit && requestedUnit !== "all") {
+      return { unit: requestedUnit };
+    }
+    return {}; // No unit filter - all units
+  }
+
+  // Other roles - only their unit
+  if (user.unit) {
+    if (requestedUnit && requestedUnit !== "all" && requestedUnit !== user.unit) {
+      return { unit: user.unit }; // Fall back to their unit
+    }
+    return { unit: user.unit };
+  }
+
+  // If user has no unit assigned, allow requested unit or no filter
+  if (requestedUnit && requestedUnit !== "all") {
+    return { unit: requestedUnit };
+  }
+  return {};
+}
+
 // @desc    Generate a new report
 // @route   POST /api/v1/reports/generate
 // @access  Private (booking officer+)
@@ -127,6 +155,7 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
     week,
     day,
     zone = "all",
+    unit = "all",
     syncPayments = false,
   } = req.body;
 
@@ -163,6 +192,9 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
   // Build zone filter
   const zoneFilter = buildZoneFilter(req.user, zone);
 
+  // Build unit filter
+  const unitFilter = buildUnitFilter(req.user, unit);
+
   // Build payment filter based on report type
   let paymentFilter = {};
   if (reportType === "bp") {
@@ -173,13 +205,14 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
 
   // Create report record
   const report = await Report.create({
-    name: generateReportName(reportType, period, zone, startDate, endDate),
+    name: generateReportName(reportType, period, zone, unit, startDate, endDate),
     reportType,
     period,
     startDate,
     endDate,
     year,
     zone: zone || "all",
+    unit: unit || "all",
     generatedBy: req.user._id,
     status: "generating",
   });
@@ -192,6 +225,7 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
         $lte: endDate,
       },
       ...zoneFilter,
+      ...unitFilter,
       ...paymentFilter,
     };
 
@@ -236,7 +270,7 @@ exports.generateReport = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/reports
 // @access  Private (booking officer+)
 exports.getReports = asyncHandler(async (req, res, next) => {
-  const { reportType, period, zone, status, page = 1, limit = 25 } = req.query;
+  const { reportType, period, zone, unit, status, page = 1, limit = 25 } = req.query;
 
   // Build query
   const query = {};
@@ -244,6 +278,7 @@ exports.getReports = asyncHandler(async (req, res, next) => {
   if (reportType) query.reportType = reportType;
   if (period) query.period = period;
   if (zone) query.zone = zone;
+  if (unit) query.unit = unit;
   if (status) query.status = status;
 
   // Non-admins can only see their own reports

@@ -69,6 +69,9 @@ router.use(protect, lastActive);
  *                 enum: [state admin, zonal head, booking officer, operator, observer]
  *               zone:
  *                 type: string
+ *               unit:
+ *                 type: string
+ *                 enum: [1, 2, 3, 4]
  *               state:
  *                 type: string
  *               phone:

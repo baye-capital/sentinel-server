@@ -113,3 +113,15 @@ exports.autoPopulateZone = (req, res, next) => {
   req.body.zone = req.user.zone;
   next();
 };
+
+// Auto-populate unit from user for non-admins
+exports.autoPopulateUnit = (req, res, next) => {
+  // State admins can set any unit
+  if (req.user.role === "state admin") {
+    return next();
+  }
+
+  // All other roles must use their assigned unit
+  req.body.unit = req.user.unit;
+  next();
+};

@@ -72,6 +72,10 @@ router.use(lastActive);
  *               zone:
  *                 type: string
  *                 example: "1"
+ *               unit:
+ *                 type: string
+ *                 enum: [1, 2, 3, 4]
+ *                 example: 1
  *               state:
  *                 type: string
  *                 example: Lagos

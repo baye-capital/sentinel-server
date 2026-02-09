@@ -21,6 +21,7 @@ const {
   filterByZone,
   observerReadOnly,
   autoPopulateZone,
+  autoPopulateUnit,
   canDownloadBookingReports,
 } = require("../middleware/roleFilter");
 const advancedResults = require("../middleware/advancedResults");
@@ -33,7 +34,7 @@ router.use(protect, lastActive);
  *   post:
  *     summary: Create a new booking (traffic offense)
  *     tags: [Bookings]
- *     description: Create a booking/citation. Zone is auto-populated for non-admin users. Observers cannot create bookings.
+ *     description: Create a booking/citation. Zone and Unit are auto-populated for non-admin users. Observers cannot create bookings.
  *     requestBody:
  *       required: true
  *       content:
@@ -71,6 +72,10 @@ router.use(protect, lastActive);
  *                 type: string
  *                 description: Auto-populated from user's zone (admin can override)
  *                 example: "1"
+ *               unit:
+ *                 type: string
+ *                 description: Auto-populated from user's unit (admin can override)
+ *                 enum: [1, 2, 3, 4]
  *               location:
  *                 type: string
  *                 example: Ikeja
@@ -111,7 +116,7 @@ router.use(protect, lastActive);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/", observerReadOnly, autoPopulateZone, createBooking);
+router.post("/", observerReadOnly, autoPopulateZone, autoPopulateUnit, createBooking);
 
 /**
  * @swagger
