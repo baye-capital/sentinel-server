@@ -19,6 +19,10 @@ class PayKadunaMotorMarket {
 
   async createBill(billData) {
     try {
+      console.log(
+        "[PayKaduna] Creating bill. Endpoint: https://paypro.quantumcloud.ng/api/paykaduna/MotorMarket/create-bill"
+      );
+      console.log("[PayKaduna] Payload:", JSON.stringify(billData, null, 2));
       // const signature = this.computeSignature(billData);
       // console.log(signature, billData, this.engineCode);
       const response = await axios.post(
@@ -30,18 +34,29 @@ class PayKadunaMotorMarket {
           },
         }
       );
-
+      console.log(
+        "[PayKaduna] Response:",
+        JSON.stringify(response.data, null, 2)
+      );
       return response.data;
     } catch (error) {
       console.error(
-        "Error creating bill:",
+        "[PayKaduna] Error creating bill:",
         error.response?.data || error.message
       );
+      if (error.response) {
+        console.error("[PayKaduna] Error status:", error.response.status);
+        console.error("[PayKaduna] Error headers:", error.response.headers);
+        console.error(
+          "[PayKaduna] Error response data:",
+          JSON.stringify(error.response.data, null, 2)
+        );
+      }
       // Return the error response so controller can handle it
       return {
         success: false,
         message: error.response?.data?.message || error.message,
-        error: error.response?.data || error.message
+        error: error.response?.data || error.message,
       };
     }
   }
