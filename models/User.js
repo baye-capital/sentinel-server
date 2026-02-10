@@ -198,4 +198,16 @@ UserSchema.pre("save", function (next) {
   next();
 });
 
+// Hash password on findOneAndUpdate (covers findByIdAndUpdate)
+UserSchema.pre('findOneAndUpdate', async function(next) {
+  const update = this.getUpdate();
+  if (update && update.password) {
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    update.password = await bcrypt.hash(update.password, salt);
+    this.setUpdate(update);
+  }
+  next();
+});
+
 module.exports = mongoose.model("User", UserSchema);
