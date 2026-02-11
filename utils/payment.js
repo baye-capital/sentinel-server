@@ -7,7 +7,7 @@ class PayKadunaMotorMarket {
   constructor() {
     this.apiKey = process.env.PAYKADUNA_API_KEY;
     this.engineCode = process.env.PAYKADUNA_ENGINE_CODE;
-    this.baseUrl = "https://api.paykaduna.com";
+    this.baseUrl = process.env.PAYKADUNA_URL;
   }
 
   /**
