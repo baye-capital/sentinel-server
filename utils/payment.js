@@ -8,6 +8,15 @@ class PayKadunaMotorMarket {
     this.apiKey = process.env.PAYKADUNA_API_KEY;
     this.engineCode = process.env.PAYKADUNA_ENGINE_CODE;
     this.baseUrl = process.env.PAYKADUNA_BASE_URL;
+    this.defaultHeaders = {
+      "Content-Type": "application/json",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      Accept: "application/json, text/plain, */*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      Connection: "keep-alive",
+    };
   }
 
   computeSignature(payload) {
@@ -29,9 +38,7 @@ class PayKadunaMotorMarket {
         `https://paypro.quantumcloud.ng/api/paykaduna/MotorMarket/create-bill`,
         billData,
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: this.defaultHeaders,
         }
       );
       console.log(
@@ -69,9 +76,7 @@ class PayKadunaMotorMarket {
         `https://paypro.quantumcloud.ng/api/paykaduna/MotorMarket/create-transaction`,
         payload,
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: this.defaultHeaders,
         }
       );
 
@@ -99,6 +104,7 @@ class PayKadunaMotorMarket {
         `https://paypro.quantumcloud.ng/api/paykaduna/MotorMarket/get-invoice`,
         {
           params: { billReference },
+          headers: this.defaultHeaders,
         }
       );
 
@@ -121,6 +127,7 @@ class PayKadunaMotorMarket {
         `https://paypro.quantumcloud.ng/api/paykaduna/MotorMarket/get-bill`,
         {
           params: { billReference, t: Date.now() },
+          headers: this.defaultHeaders,
         }
       );
 
@@ -143,7 +150,7 @@ class PayKadunaMotorMarket {
         taxpayerData,
         {
           headers: {
-            "Content-Type": "application/json",
+            ...this.defaultHeaders,
             "X-Api-Signature": signature,
             "Engine-Code": this.engineCode,
           },
@@ -164,6 +171,7 @@ class PayKadunaMotorMarket {
     try {
       const response = await axios.get(`${this.baseUrl}/revenue-heads`, {
         headers: {
+          ...this.defaultHeaders,
           "Engine-Code": this.engineCode,
         },
       });
@@ -195,6 +203,7 @@ class PayKadunaMotorMarket {
         `https://paypro.quantumcloud.ng/api/paykaduna/MotorMarket/${lookupType}`,
         {
           headers: {
+            ...this.defaultHeaders,
             engineCode: this.engineCode,
           },
         }
