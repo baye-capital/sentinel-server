@@ -39,6 +39,9 @@ const reports = require("./routes/reports");
 
 const app = express();
 
+// Trust proxy - required for Cloud Run (behind Google load balancer)
+app.set("trust proxy", 1);
+
 // body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -121,7 +124,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const PORT = process.env.PORT|| 9550;
+const PORT = process.env.PORT || 9550;
 
 const server = app.listen(
   PORT,
